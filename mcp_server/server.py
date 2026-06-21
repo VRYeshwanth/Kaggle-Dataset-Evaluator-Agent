@@ -1,5 +1,6 @@
 """
 server.py
+Command: python -m mcp_server.server
 
 Kaggle Dataset Evaluator Agent MCP Server.
 """

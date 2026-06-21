@@ -29,15 +29,15 @@ MCP Server
 - Python
 - Pandas
 - MCP
-- Google ADK (planned)
-- Gemini (planned)
+- Google ADK
+- Gemini
 - Streamlit (planned)
 
 ## Current Status
 
 - [x] Analysis Engine
 - [x] MCP Server
-- [ ] ADK Agent
-- [ ] Gemini Integration
+- [x] ADK Agent
+- [x] Gemini Integration
 - [ ] Streamlit UI
 - [ ] Deployment
