@@ -1,17 +1,22 @@
 from pathlib import Path
 import json
 from io import BytesIO
-
 import pandas as pd
 import streamlit as st
+import asyncio
+
+from agent.chat import (
+    create_session,
+    ask_agent,
+)
 
 from reportlab.platypus import (
     SimpleDocTemplate,
     Paragraph,
     Spacer,
 )
-from reportlab.lib.styles import getSampleStyleSheet
 
+from reportlab.lib.styles import getSampleStyleSheet
 from mcp_server.tools import analyze_dataset
 
 # ======================================================
@@ -33,6 +38,15 @@ if "analysis_results" not in st.session_state:
 
 if "current_file" not in st.session_state:
     st.session_state.current_file = None
+
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
+
+if "chat_session_id" not in st.session_state:
+    st.session_state.chat_session_id = None
+
+if "dataset_path" not in st.session_state:
+    st.session_state.dataset_path = None
 
 # ======================================================
 # HELPERS
@@ -179,6 +193,15 @@ if uploaded_file:
         != uploaded_file.name
     ):
         st.session_state.analysis_results = None
+
+        st.session_state.chat_history = []
+
+        st.session_state.chat_session_id = (
+            asyncio.run(
+                create_session()
+            )
+        )
+
         st.session_state.current_file = (
             uploaded_file.name
         )
@@ -186,6 +209,20 @@ if uploaded_file:
     dataset_path = save_uploaded_file(
         uploaded_file
     )
+
+    st.session_state.dataset_path = str(
+        dataset_path
+    )
+
+    if (
+        st.session_state.chat_session_id
+        is None
+    ):
+        st.session_state.chat_session_id = (
+            asyncio.run(
+                create_session()
+            )
+        )
 
     try:
         preview_df = pd.read_csv(
@@ -330,6 +367,7 @@ if results:
         tab3,
         tab4,
         tab5,
+        tab6,
     ) = st.tabs(
         [
             "Overview",
@@ -337,6 +375,7 @@ if results:
             "Data Quality",
             "ML Insights",
             "Report",
+            "Chat"
         ]
     )
 
@@ -782,6 +821,118 @@ if results:
                 file_name="analysis.json",
                 mime="application/json",
             )
+
+    # ==================================================
+    # CHAT
+    # ==================================================
+
+    with tab6:
+
+        st.subheader(
+            "Dataset Chat"
+        )
+
+        if (
+            st.session_state.dataset_path
+            is None
+        ):
+            st.info(
+                "Upload a dataset first."
+            )
+
+        else:
+
+            # ------------------------------
+            # Chat Messages Container
+            # ------------------------------
+
+            chat_container = st.container()
+
+            # ------------------------------
+            # Chat Input
+            # ------------------------------
+
+            prompt = st.chat_input(
+                "Ask about your dataset..."
+            )
+
+            # ------------------------------
+            # Process New Message
+            # ------------------------------
+
+            if prompt:
+
+                st.session_state.chat_history.append(
+                    {
+                        "role": "user",
+                        "content": prompt,
+                    }
+                )
+
+                analysis_results = json.dumps(
+                    st.session_state.analysis_results,
+                    indent=2,
+                )
+
+                full_prompt = f"""
+                    ACTIVE DATASET PATH:
+                    {st.session_state.dataset_path}
+
+                    DATASET ANALYSIS RESULTS:
+                    {analysis_results}
+
+                    Use the analysis results above whenever possible.
+
+                    Do not re-run MCP tools if the answer can be derived from the analysis results.
+
+                    Only call MCP tools when:
+                    - Analysis results are missing.
+                    - Analysis results are insufficient.
+                    - The user explicitly requests a fresh analysis.
+
+                    Do not ask the user for a dataset path.
+
+                    User question:
+                    {prompt}
+                """
+
+                with st.spinner(
+                    "Thinking..."
+                ):
+
+                    response = asyncio.run(
+                        ask_agent(
+                            full_prompt,
+                            st.session_state.chat_session_id,
+                        )
+                    )
+
+                st.session_state.chat_history.append(
+                    {
+                        "role": "assistant",
+                        "content": response,
+                    }
+                )
+
+                # Force clean redraw
+                st.rerun()
+
+            # ------------------------------
+            # Render Chat History
+            # ------------------------------
+
+            with chat_container:
+
+                for message in (
+                    st.session_state.chat_history
+                ):
+
+                    with st.chat_message(
+                        message["role"]
+                    ):
+                        st.markdown(
+                            message["content"]
+                        )
 
 else:
 

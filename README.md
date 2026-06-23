@@ -26,6 +26,14 @@ The Kaggle Dataset Evaluator Agent aims to solve this problem by providing an au
 
 ---
 
+# Why This Project?
+
+Most ML workflows begin with exploratory analysis and dataset validation.
+
+This project automates that process by combining traditional data analysis techniques with agentic AI, allowing users to evaluate datasets, receive recommendations, and interact with results conversationally before committing time to model development.
+
+---
+
 # Features
 
 ## Dataset Analysis
@@ -122,6 +130,22 @@ Reports can be downloaded directly from the Streamlit frontend.
 
 ---
 
+## Conversational Dataset Chat
+
+The Streamlit dashboard includes an integrated ADK-powered chat assistant.
+
+Users can ask natural language questions about the currently uploaded dataset such as:
+
+- Why was this dataset scored 9.34?
+- Is this dataset suitable for classification?
+- Can this dataset be used for clustering?
+- What preprocessing steps should I prioritize?
+- Suggest advanced project ideas.
+
+The assistant uses Google ADK and MCP tools to provide dataset-aware responses.
+
+---
+
 ## Security Layer
 
 Dataset access is validated through a dedicated security module.
@@ -174,19 +198,24 @@ This prevents unsafe or unintended file access.
 # Streamlit Dashboard Architecture
 
 ```text
-              +-------------------+
-              |  Streamlit Front  |
-              +---------+---------+
-                        |
-                        v
-              +-------------------+
-              |     MCP Tools     |
-              +---------+---------+
-                        |
-                        v
-              +-------------------+
-              | Analysis Engine   |
-              +-------------------+
+                +-------------------+
+                |  Streamlit Front  |
+                +---------+---------+
+                          |
+                          v
+                +-------------------+
+                |    ADK Agent      |
+                +---------+---------+
+                          |
+                          v
+                +-------------------+
+                |     MCP Tools     |
+                +---------+---------+
+                          |
+                          v
+                +-------------------+
+                | Analysis Engine   |
+                +-------------------+
 ```
 
 The dashboard uses MCP tools directly for fast dataset analysis while the ADK agent remains available for conversational interactions.
@@ -197,37 +226,43 @@ The dashboard uses MCP tools directly for fast dataset analysis while the ADK ag
 
 ```text
 
-Kaggle Dataset Evaluator Agent/
-├── agent/
-│   ├── agent.py
-│   ├── security.py
-│   └── __init__.py
-├── data/
-│   ├── candidate_job_role_dataset.csv
-│   ├── diamonds.csv
-│   ├── heart_disease.csv
-│   └── sample.csv
-├── images/
-│   ├── adk_interface.png
-│   ├── analysis1.png
-│   ├── analysis2.png
-│   ├── analysis3.png
-│   ├── analysis4.png
-│   ├── dashboard.png
-│   ├── mcp_inspector.png
-│   └── pdf.png
-├── mcp_server/
-│   ├── server.py
-│   ├── tools.py
-│   └── __init__.py
-├── README.md
-├── requirements.txt
-├── src/
-│   ├── analysis.py
-│   ├── test_analysis.py
-│   └── __init__.py
-├── streamlit_app.py
-└── test_mcp.py
+Directory structure:
+└── Kaggle Dataset Evaluator Agent/
+    ├── agent/
+    │   ├── agent.py
+    │   ├── chat.py
+    │   ├── security.py
+    │   └── __init__.py
+    ├── data/
+    │   ├── candidate_job_role_dataset.csv
+    │   ├── diamonds.csv
+    │   ├── heart_disease.csv
+    │   ├── Iris.csv
+    │   └── sample.csv
+    ├── images/
+    │   ├── adk_interface.png
+    │   ├── analysis1.png
+    │   ├── analysis2.png
+    │   ├── analysis3.png
+    │   ├── analysis4.png
+    │   ├── chat_interface.png
+    │   ├── dashboard.png
+    │   ├── mcp_inspector.png
+    │   └── pdf.png
+    ├── mcp_server/
+    │   ├── server.py
+    │   ├── tools.py
+    │   └── __init__.py
+    ├── README.md
+    ├── requirements.txt
+    ├── src/
+    │   ├── analysis.py
+    │   ├── test_analysis.py
+    │   └── __init__.py
+    ├── streamlit_app.py
+    ├── test_agent.py
+    └── test_mcp.py
+
 
 ```
 
@@ -516,6 +551,10 @@ Suggest advanced project ideas.
 
 ---
 
+## Dataset Chat
+
+![Dataset Chat](./images/chat_interface.png)
+
 # Future Improvements
 
 Potential future enhancements include:
@@ -526,7 +565,6 @@ Potential future enhancements include:
 - Feature importance estimation
 - Dataset comparison workflows
 - Automated EDA visualizations
-- Programmatic ADK chat integration into Streamlit
 
 ---
 
